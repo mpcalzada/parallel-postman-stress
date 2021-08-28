@@ -1,0 +1,215 @@
+{
+	"info": {
+		"_postman_id": "5139d7a6-28fd-4f27-811d-912041c4073f",
+		"name": "Concurrent KM Consulta",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Simple TT query",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var body = JSON.parse(responseBody)",
+							"pm.environment.set(\"transaction_id\", body.transaction_id);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 200ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(500);",
+							"});",
+							"",
+							"",
+							"pm.test(\"Contains transaction id\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"transaction_id\");",
+							"});",
+							"",
+							"postman.setNextRequest(\"Get Status\")"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"start_date\": \"{{start_date}}\",\n    \"end_date\": \"{{end_date}}\"\n}"
+				},
+				"url": {
+					"raw": "http://{{ip}}:{{port}}{{uri}}/query",
+					"protocol": "http",
+					"host": [
+						"{{ip}}"
+					],
+					"port": "{{port}}{{uri}}",
+					"path": [
+						"query"
+					]
+				},
+				"description": "Calls to /query method of the API"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Status",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();\r",
+							"var currentPage = pm.environment.get(\"pageNumber\");\r",
+							"currentPage += 1;\r",
+							"\r",
+							"if(currentPage <= jsonData.info.pageNumbers)\r",
+							"{\r",
+							"    pm.environment.set(\"pageNumber\", currentPage);\r",
+							"    postman.setNextRequest(\"Get Result\")\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://{{ip}}:{{port}}{{uri}}/status?transactionId={{transaction_id}}",
+					"protocol": "http",
+					"host": [
+						"{{ip}}"
+					],
+					"port": "{{port}}{{uri}}",
+					"path": [
+						"status"
+					],
+					"query": [
+						{
+							"key": "transactionId",
+							"value": "{{transaction_id}}"
+						}
+					]
+				},
+				"description": "Calls to /query method of the API"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Result",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"postman.setNextRequest(\"Get Status\")"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://{{ip}}:{{port}}{{uri}}/result{{transaction_id}}?page={{pageNumber}}&remove=false",
+					"protocol": "http",
+					"host": [
+						"{{ip}}"
+					],
+					"port": "{{port}}{{uri}}",
+					"path": [
+						"result{{transaction_id}}"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "{{pageNumber}}"
+						},
+						{
+							"key": "remove",
+							"value": "false"
+						}
+					]
+				},
+				"description": "Calls to /query method of the API"
+			},
+			"response": []
+		}
+	]
+}
